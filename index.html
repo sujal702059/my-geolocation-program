@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Share Location</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      padding: 30px;
+      text-align: center;
+      width: 400px;
+      animation: fadeIn 1s ease;
+    }
+    h1 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+    button {
+      background: #2196F3;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+    button:hover {
+      background: #1976D2;
+      transform: scale(1.05);
+    }
+    #output {
+      margin-top: 20px;
+      font-size: 15px;
+      color: #555;
+      line-height: 1.5;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>📍 Share Your Location</h1>
+    <button onclick="getLocation()">Allow Location</button>
+    <p id="output">Click the button to share your location.</p>
+  </div>
+
+  <script>
+    function getLocation() {
+      const output = document.getElementById("output");
+      if (navigator.geolocation) {
+        output.innerText = "Requesting location...";
+        navigator.geolocation.getCurrentPosition(showPosition, showError);
+      } else {
+        output.innerText = "Geolocation not supported.";
+      }
+    }
+
+    function showPosition(position) {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+
+      // Reverse geocode with OpenStreetMap
+      const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
+
+      fetch(url, { headers: { 'User-Agent': 'location-demo' } })
+        .then(res => res.json())
+        .then(data => {
+          const address = data.display_name;
+          document.getElementById("output").innerHTML = `✅ Location: <b>${address}</b>`;
+
+          // Show alert popup
+          alert("Your location is sent ✅");
+
+          // Save to localStorage
+          localStorage.setItem("userLocation", address);
+
+          // Log to console
+          console.log("User Location:", address);
+          console.log("Latitude:", lat, "Longitude:", lon);
+        })
+        .catch(err => {
+          document.getElementById("output").innerText = "Error fetching address: " + err;
+        });
+    }
+
+    function showError(error) {
+      document.getElementById("output").innerText = "Error: " + error.message;
+    }
+  </script>
+</body>
+</html>
